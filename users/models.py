@@ -5,10 +5,7 @@ from materials.models import Course, Lesson
 
 NULLABLE = {"null": True, "blank": True}
 
-payment_method_list = {
-    "наличными": "наличными",
-    "переводом": "переводом"
-}
+PAYMENT_METHOD_LIST = [("наличные", "наличные"), ("перевод", "перевод")]
 
 
 class User(AbstractUser):
@@ -40,17 +37,19 @@ class User(AbstractUser):
 
 
 class Payment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', **NULLABLE)
-    payment_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата оплаты'),
-    paid_course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name="Оплаченный курс", **NULLABLE)
-    paid_lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, verbose_name="Оплаченный урок", **NULLABLE)
-    payment_sum = models.PositiveIntegerField(verbose_name='Сумма оплаты')
-    payment_method = models.CharField(max_length=50, choices=payment_method_list, verbose_name='Способ оплаты')
-
-    def __str__(self):
-        return (f'{self.user}: {self.payment_date}\n{self.payment_sum}, {self.payment_method}\n '
-                f'за {self.paid_lesson} {self.paid_course}')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, **NULLABLE)
+    date_payment = models.DateField(verbose_name="дата оплаты", auto_now_add=True)
+    paid_course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, verbose_name="оплаченный курс", **NULLABLE
+    )
+    paid_lesson = models.ForeignKey(
+        Lesson, on_delete=models.CASCADE, verbose_name="оплаченный урок", **NULLABLE
+    )
+    payment_amount = models.PositiveIntegerField(verbose_name="сумма оплаты")
+    payment_method = models.CharField(
+        max_length=100, verbose_name="способ оплаты", choices=PAYMENT_METHOD_LIST
+    )
 
     class Meta:
-        verbose_name = 'платеж'
-        verbose_name_plural = 'платежи'
+        verbose_name = "Оплата"
+        verbose_name_plural = "Оплата"

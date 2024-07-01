@@ -1,0 +1,14 @@
+[
+  {
+    "model": "users.payment",
+    "pk": 1,
+    "fields": {
+      "user": null,
+      "date_payment": "2024-06-22",
+      "paid_course": 2,
+      "paid_lesson": 1,
+      "payment_amount": 2000,
+      "payment_method": "перевод"
+    }
+  }
+]
