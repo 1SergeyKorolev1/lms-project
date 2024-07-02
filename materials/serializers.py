@@ -3,10 +3,12 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework.fields import SerializerMethodField
 
 from materials.models import Course, Lesson, Subscription
+from materials.validators import youtube_validator
 from users.models import User
 
 
 class LessonSerializer(ModelSerializer):
+    url = serializers.CharField(validators=[youtube_validator])
 
     class Meta:
         model = Lesson
