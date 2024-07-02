@@ -66,7 +66,7 @@ class Subscription(models.Model):
         AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь", **NULLABLE
     )
     course = models.ForeignKey(
-        Course, on_delete=models.CASCADE, related_name="Курс", **NULLABLE
+        Course, on_delete=models.CASCADE, verbose_name="Курс", related_name="subscription", **NULLABLE
     )
 
     def __str__(self):

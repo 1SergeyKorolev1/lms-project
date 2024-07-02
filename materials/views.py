@@ -1,9 +1,13 @@
+from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, generics
 
-from materials.models import Course, Lesson
+from materials.models import Course, Lesson, Subscription
 from materials.serializers import (CourseDitailSerializer, CourseSerializer,
-                                   LessonSerializer)
+                                   LessonSerializer, SubscriptionSerializer)
 from users.permissions import IsModerator, IsOwner
 
 
@@ -29,6 +33,27 @@ class CourseViewSet(ModelViewSet):
         elif self.action == "destroy":
             self.permission_classes = (~IsModerator | IsOwner,)
         return super().get_permissions()
+
+
+class SubscriptionViewSet(APIView):
+
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
+    # permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        course = self.request.data.get("course")
+        course_item = get_object_or_404(Course, pk=course)
+
+        subscription, created = Subscription.objects.get_or_create(owner=user, course=course_item)
+        if not created:
+            subscription.delete()
+            message = 'Subscription removed'
+        else:
+            message = 'Subscription added'
+
+        return Response({"message": message}, status=status.HTTP_201_CREATED)
 
 
 class LessonCreateAPIView(generics.CreateAPIView):

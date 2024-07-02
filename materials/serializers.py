@@ -2,7 +2,8 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.fields import SerializerMethodField
 
-from materials.models import Course, Lesson
+from materials.models import Course, Lesson, Subscription
+from users.models import User
 
 
 class LessonSerializer(ModelSerializer):
@@ -13,8 +14,9 @@ class LessonSerializer(ModelSerializer):
 
 
 class CourseSerializer(ModelSerializer):
-    quantity_lessons = serializers.SerializerMethodField()
+    quantity_lessons = serializers.SerializerMethodField(read_only=True)
     lesson_list = LessonSerializer(source="lesson", many=True, read_only=True)
+    subscription = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Course
@@ -22,6 +24,12 @@ class CourseSerializer(ModelSerializer):
 
     def get_quantity_lessons(self, obj):
         return obj.lesson.filter(course=obj).count()
+
+    def get_subscription(self, odj):
+        user = User.objects.get(is_active=True)
+        if odj.subscription.filter(owner=user).count() < 1:
+            return "нет подписки"
+        return "есть подписка"
 
 
 class CourseDitailSerializer(serializers.ModelSerializer):
@@ -33,3 +41,8 @@ class CourseDitailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ['id', 'name', 'description', 'number_lessons']
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = "__all__"
