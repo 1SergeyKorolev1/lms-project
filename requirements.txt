@@ -5,3 +5,4 @@ psycopg2==2.9.9
 python-dotenv
 django-filter
 djangorestframework-simplejwt
+stripe
