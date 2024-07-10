@@ -1,10 +1,14 @@
+import datetime
+
+import pytz
 from celery import shared_task
 from django.core.mail import send_mail
 
+from config.settings import EMAIL_HOST_USER
 from materials.models import Course, Subscription
 from users.models import User
-from config.settings import EMAIL_HOST_USER
 
+zone = pytz.timezone('Europe/Moscow')
 
 @shared_task
 def update_message(pk):
@@ -27,3 +31,18 @@ def update_message(pk):
                     recipient_list=followed_users_email,
                 )
 
+
+def filter_last_login():
+    users = User.objects.all()
+    if users:
+        for user in users:
+            if user.last_login:
+                date = datetime.datetime.now(zone)
+                condition = datetime.timedelta(weeks=4)
+                difference = date - user.last_login
+                if difference >= condition:
+                    user.is_active = False
+                    user.save()
+            else:
+                user.is_active = False
+                user.save()

@@ -1,11 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+import datetime
 from materials.models import Course, Lesson
-
+import pytz
 NULLABLE = {"null": True, "blank": True}
 
 PAYMENT_METHOD_LIST = [("наличные", "наличные"), ("перевод", "перевод")]
+zone = pytz.timezone('Europe/Moscow')
 
 
 class User(AbstractUser):
@@ -24,6 +25,7 @@ class User(AbstractUser):
         help_text="Загрузите аватар",
         **NULLABLE
     )
+    last_login = models.DateTimeField(default=datetime.datetime.now(zone), verbose_name="Время последнего посещения", **NULLABLE)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
