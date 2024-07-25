@@ -53,8 +53,8 @@ class PaymentCreateAPIView(generics.CreateAPIView):
         product_id = create_stripe_product(payment)
         price = create_stripe_price(payment.payment_amount, product_id)
         session_id, payment_url = create_stripe_session(price)
-        payment.session_id = session_id
-        payment.url = payment_url
+        payment.id_session = session_id
+        payment.payment_link = payment_url
         payment.save()
 
 
@@ -65,11 +65,11 @@ class PaymentListAPIView(generics.ListAPIView):
 
     serializer_class = PaymentSerializer
     queryset = Payment.objects.all()
-    if queryset.count()!= 0:
-        filter_backends = [DjangoFilterBackend, OrderingFilter]
-        filterset_fields = (
-            "paid_course",
-            "paid_lesson",
-            "payment_method",
-        )
-        ordering_fields = ("date_payment",)
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = (
+        "paid_course",
+        "paid_lesson",
+        "payment_method",
+    )
+    ordering_fields = ("date_payment",)

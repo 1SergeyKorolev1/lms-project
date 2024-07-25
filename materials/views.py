@@ -1,16 +1,16 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, generics
 
 from materials.models import Course, Lesson, Subscription
-from materials.paginations import MaterialsPagination
+from materials.paginators import MaterialsPagination
 from materials.serializers import (CourseDitailSerializer, CourseSerializer,
                                    LessonSerializer, SubscriptionSerializer)
-from materials.tasks import update_message
 from users.permissions import IsModerator, IsOwner
+from materials.tasks import update_message
 
 
 class CourseViewSet(ModelViewSet):
@@ -40,28 +40,8 @@ class CourseViewSet(ModelViewSet):
     def perform_update(self, serializer):
         instance = serializer.save()
         update_message.delay(instance.pk)
+        # print("120")
         return instance
-
-
-class SubscriptionViewSet(APIView):
-
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-    # permission_classes = (IsAuthenticated,)
-
-    def post(self, request, *args, **kwargs):
-        user = self.request.user
-        course = self.request.data.get("course")
-        course_item = get_object_or_404(Course, pk=course)
-
-        subscription, created = Subscription.objects.get_or_create(owner=user, course=course_item)
-        if not created:
-            subscription.delete()
-            message = 'Subscription removed'
-        else:
-            message = 'Subscription added'
-
-        return Response({"message": message}, status=status.HTTP_201_CREATED)
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
@@ -95,3 +75,23 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
     permission_classes = (IsAuthenticated, IsOwner | ~IsModerator)
+
+
+class SubscriptionAPIView(APIView):
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, *args, **kwargs):
+        user = self.request.user
+        course_id = self.request.data.get('course')
+        course_item = get_object_or_404(Course, pk=course_id)
+        sub_item = Subscription.objects.filter(user=user, course=course_item)
+
+        if sub_item.exists():
+            sub_item.delete()
+            message = 'подписка удалена'
+        else:
+            Subscription.objects.create(user=user, course=course_item)
+            message = 'подписка добавлена'
+        return Response({"message": message}, status=status.HTTP_201_CREATED)

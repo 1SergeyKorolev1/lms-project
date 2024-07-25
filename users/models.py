@@ -1,12 +1,11 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-import datetime
+
 from materials.models import Course, Lesson
-import pytz
+
 NULLABLE = {"null": True, "blank": True}
 
 PAYMENT_METHOD_LIST = [("наличные", "наличные"), ("перевод", "перевод")]
-zone = pytz.timezone('Europe/Moscow')
 
 
 class User(AbstractUser):
@@ -25,7 +24,8 @@ class User(AbstractUser):
         help_text="Загрузите аватар",
         **NULLABLE
     )
-    last_login = models.DateTimeField(default=datetime.datetime.now(zone), verbose_name="Время последнего посещения", **NULLABLE)
+    last_login = models.DateTimeField(auto_now=True, verbose_name="Время последнего посещения",
+                                      **NULLABLE)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -51,16 +51,11 @@ class Payment(models.Model):
     payment_method = models.CharField(
         max_length=100, verbose_name="способ оплаты", choices=PAYMENT_METHOD_LIST
     )
-    session_id = models.CharField(
-        max_length=255,
-        **NULLABLE,
-        verbose_name="id сессии",
-    )
-    url = models.URLField(
-        max_length=400,
-        verbose_name="Ссылка на оплату",
-        **NULLABLE,
-    )
+    payment_link = models.URLField(max_length=400, verbose_name="ссылка на оплату", **NULLABLE)
+    id_session = models.CharField(max_length=300, verbose_name="id сессии", **NULLABLE)
+
+    def __str__(self):
+        return f'{self.user}-{self.date_payment}, {self.payment_amount}-{self.payment_method}'
 
     class Meta:
         verbose_name = "Оплата"

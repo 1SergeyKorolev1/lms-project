@@ -11,7 +11,7 @@ class LessonTestCase(APITestCase):
         self.user = User.objects.create(email='tedt@tru.ru')
         self.course = Course.objects.create(name='test_name', owner=self.user)
         self.lesson = Lesson.objects.create(name='test_name', course=self.course, owner=self.user)
-        self.subscription = Subscription.objects.create(owner=self.user, course=self.course)
+        self.subscription = Subscription.objects.create(user=self.user, course=self.course)
         self.client.force_authenticate(user=self.user)
 
     def test_lesson_retrieve(self):
@@ -84,8 +84,6 @@ class LessonTestCase(APITestCase):
             Lesson.objects.all().count(), 0
         )
 
-
-
     def test_course_retrieve(self):
         url = reverse('materials:course-detail', args=(self.course.pk,))
         response = self.client.get(url)
@@ -105,4 +103,3 @@ class LessonTestCase(APITestCase):
         self.assertEqual(
             data.get('subscription'), 'есть подписка'
         )
-
